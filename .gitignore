@@ -1,0 +1,51 @@
+# =========================================================
+# Zephyr + VS Code Project .gitignore (PlantCare)
+# =========================================================
+
+# --- Build output and generated files ---
+build/
+zephyr/
+*.elf
+*.bin
+*.hex
+*.map
+*.log
+*.lst
+
+# --- Zephyr / CMake intermediate caches ---
+.zephyr-cache/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# --- West & Python caches ---
+__pycache__/
+*.pyc
+.venv/
+.venv*/
+*.egg-info/
+*.pyo
+
+# --- VS Code local settings ---
+.vscode/launch.json
+.vscode/c_cpp_properties.json
+# Keep shared build & IntelliSense configs
+!.vscode/tasks.json
+!.vscode/settings.json
+
+# --- macOS system junk ---
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# --- Temporary or backup files ---
+*~
+*.swp
+*.bak
+*.tmp
+*.orig
