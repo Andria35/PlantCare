@@ -7,6 +7,9 @@
 
   // Optional: treat .h as C, not C++
   "files.associations": {
-    "*.h": "c"
+    "*.h": "c",
+    "cmath": "c",
+    "complex": "c",
+    "cstdlib": "c"
   }
 }
