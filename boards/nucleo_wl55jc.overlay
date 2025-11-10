@@ -1,0 +1,29 @@
+
+/* The board DTS already sets I2C2 pins to PA12/PA11 and status = "okay". */
+&i2c2 {
+    status = "okay";
+    /* Optional: lock speed (board already uses 400 kHz)
+     * clock-frequency = <400000>;
+     */
+
+    tcs34725: tcs34725@29 {
+        compatible = "zephyr,i2c-device";  /* generic node for raw I2C access */
+        reg = <0x29>;                      /* 7-bit address of TCS34725 */
+        label = "TCS34725";
+        status = "okay";
+    };
+
+    si7021: si7021@40 {
+        compatible = "zephyr,i2c-device";  /* generic node for raw I2C access */
+        reg = <0x40>;                      /* 7-bit address of TCS34725 */
+        label = "SI7021";
+        status = "okay";
+    };
+
+    mma8451: mma8451@1d {
+        compatible = "zephyr,i2c-device";  /* generic node for raw I2C access */
+        reg = <0x1D>;                      /* 7-bit address of TCS34725 */
+        label = "MMA8451";
+        status = "okay";
+    };
+};
