@@ -10,6 +10,7 @@ target_sources(app PRIVATE
     src/sensors/rgb_sensor.c
     src/sensors/humidity_sensor.c
     src/sensors/accelerometer_sensor.c
+    src/sensors/light_sensor.c
 )
 
 target_include_directories(app PRIVATE)

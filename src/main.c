@@ -6,6 +6,7 @@
 #include "sensors/rgb_sensor.h"
 #include "sensors/humidity_sensor.h"
 #include "sensors/accelerometer_sensor.h"
+#include "sensors/light_sensor.h"   // <-- NEW
 
 void main(void)
 {
@@ -14,11 +15,14 @@ void main(void)
     rgb_sensor_init();
     humidity_sensor_init();
     accelerometer_sensor_init();
+    light_sensor_init();   // <-- NEW
 
     while (1) {
         uint16_t c, r, g, b;
         int32_t rh_x100, temp_x100;
         int32_t ax_x100, ay_x100, az_x100;
+        int16_t light_raw;     // <-- NEW
+        int32_t light_mv;      // <-- NEW
 
         printk("\n--- Sensor sample ---\n");
 
@@ -64,6 +68,11 @@ void main(void)
                    ax_int, ax_frac,
                    ay_int, ay_frac,
                    az_int, az_frac);
+        }
+
+        /* Light sensor on A0 (PB1 / ADC1_IN5) */
+        if (light_sensor_read(&light_raw, &light_mv) == 0) {
+            printk("Light: raw=%d (~%d mV)\n", light_raw, light_mv);
         }
 
         k_sleep(K_SECONDS(1));
