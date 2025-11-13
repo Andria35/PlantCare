@@ -6,7 +6,8 @@
 #include "sensors/rgb_sensor.h"
 #include "sensors/humidity_sensor.h"
 #include "sensors/accelerometer_sensor.h"
-#include "sensors/light_sensor.h"   // <-- NEW
+#include "sensors/light_sensor.h"
+#include "sensors/soil_sensor.h"
 
 void main(void)
 {
@@ -15,14 +16,17 @@ void main(void)
     rgb_sensor_init();
     humidity_sensor_init();
     accelerometer_sensor_init();
-    light_sensor_init();   // <-- NEW
+    light_sensor_init();
+    soil_sensor_init();
 
     while (1) {
         uint16_t c, r, g, b;
         int32_t rh_x100, temp_x100;
         int32_t ax_x100, ay_x100, az_x100;
-        int16_t light_raw;     // <-- NEW
-        int32_t light_mv;      // <-- NEW
+        int16_t light_raw;
+        int32_t light_mv;
+        int16_t soil_raw;
+        int32_t soil_mv;
 
         printk("\n--- Sensor sample ---\n");
 
@@ -73,6 +77,11 @@ void main(void)
         /* Light sensor on A0 (PB1 / ADC1_IN5) */
         if (light_sensor_read(&light_raw, &light_mv) == 0) {
             printk("Light: raw=%d (~%d mV)\n", light_raw, light_mv);
+        }
+
+        /* Soil moisture sensor on A1 (PB2 / ADC1_IN4) */
+        if (soil_sensor_read(&soil_raw, &soil_mv) == 0) {
+            printk("Soil: raw=%d (~%d mV)\n", soil_raw, soil_mv);
         }
 
         k_sleep(K_SECONDS(1));
