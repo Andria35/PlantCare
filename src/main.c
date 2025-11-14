@@ -10,6 +10,7 @@
 #include "sensors/light_sensor.h"
 #include "sensors/soil_sensor.h"
 #include "sensors/gps_sensor.h"
+#include "sensors/leds.h"
 
 void main(void)
 {
@@ -50,6 +51,15 @@ void main(void)
             if (rgb_sensor_read(&c, &r, &g, &b) == 0) {
                 printk("RGB: C=%u R=%u G=%u B=%u\n", c, r, g, b);
             }
+
+            int ret = leds_init();
+            if (ret != 0) {
+                printk("LED init failed (ret=%d)", ret);
+                return;
+            }
+
+            rgb_set(false, true, false);
+            printk("LED: GREEN");
 
             /* Humidity + temperature: values are in x100 units */
             if (humidity_sensor_read(&rh_x100, &temp_x100) == 0) {

@@ -36,3 +36,18 @@
     current-speed = <9600>;   /* Adafruit Ultimate GPS default baud */
     status = "okay";
 };
+
+/ {
+    leds {
+        compatible = "gpio-leds";
+        led_r: led_r { gpios = <&gpiob 8  GPIO_ACTIVE_LOW>; label = "LED_R"; };
+        led_b: led_b { gpios = <&gpioa 9  GPIO_ACTIVE_LOW>; label = "LED_B"; };
+        led_g: led_g { gpios = <&gpiob 10 GPIO_ACTIVE_LOW>; label = "LED_G"; }; 
+    };
+
+    aliases {
+        led0r = &led_r;
+        led0g = &led_g;
+        led0b = &led_b;
+    };
+};
