@@ -12,6 +12,7 @@ target_sources(app PRIVATE
     src/sensors/accelerometer_sensor.c
     src/sensors/light_sensor.c
     src/sensors/soil_sensor.c
+    src/sensors/gps_sensor.c
 )
 
 target_include_directories(app PRIVATE)

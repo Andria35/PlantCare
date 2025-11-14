@@ -27,3 +27,12 @@
         status = "okay";
     };
 };
+
+&usart1 {
+    /* D1 (TX) = PB6, D0 (RX) = PB7 */
+    pinctrl-0 = <&usart1_tx_pb6 &usart1_rx_pb7>;
+    pinctrl-names = "default";
+
+    current-speed = <9600>;   /* Adafruit Ultimate GPS default baud */
+    status = "okay";
+};

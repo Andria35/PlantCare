@@ -2,88 +2,106 @@
 #include <zephyr/sys/printk.h>
 #include <stdlib.h>   // for abs()
 #include <stdint.h>
+#include <errno.h>
 
 #include "sensors/rgb_sensor.h"
 #include "sensors/humidity_sensor.h"
 #include "sensors/accelerometer_sensor.h"
 #include "sensors/light_sensor.h"
 #include "sensors/soil_sensor.h"
+#include "sensors/gps_sensor.h"
 
 void main(void)
 {
-    printk("=== PlantCare: sensor demo ===\n");
+    printk("=== PlantCare: sensor demo + GPS ===\n");
 
     rgb_sensor_init();
     humidity_sensor_init();
     accelerometer_sensor_init();
     light_sensor_init();
     soil_sensor_init();
+    gps_sensor_init();    /* USART1 GPS on D0/D1 */
+
+    uint32_t last_sample_ms = k_uptime_get_32();
 
     while (1) {
-        uint16_t c, r, g, b;
-        int32_t rh_x100, temp_x100;
-        int32_t ax_x100, ay_x100, az_x100;
-        int16_t light_raw;
-        int32_t light_mv;
-        int16_t soil_raw;
-        int32_t soil_mv;
-
-        printk("\n--- Sensor sample ---\n");
-
-        /* RGB sensor (integers only) */
-        if (rgb_sensor_read(&c, &r, &g, &b) == 0) {
-            printk("RGB: C=%u R=%u G=%u B=%u\n", c, r, g, b);
+        /* ---- GPS: read characters continuously ---- */
+        uint8_t ch;
+        if (gps_sensor_read_char(&ch) == 0) {
+            printk("%c", ch);   /* stream NMEA directly */
         }
 
-        /* Humidity + temperature: values are in x100 units */
-        if (humidity_sensor_read(&rh_x100, &temp_x100) == 0) {
+        /* ---- Once per ~1000 ms: print sensor sample ---- */
+        uint32_t now = k_uptime_get_32();
+        if ((now - last_sample_ms) >= 1000U) {
+            last_sample_ms = now;
 
-            /* Clamp RH to 0–100% just in case */
-            if (rh_x100 < 0) {
-                rh_x100 = 0;
-            } else if (rh_x100 > 10000) {
-                rh_x100 = 10000;
+            uint16_t c, r, g, b;
+            int32_t rh_x100, temp_x100;
+            int32_t ax_x100, ay_x100, az_x100;
+            int16_t light_raw;
+            int32_t light_mv;
+            int16_t soil_raw;
+            int32_t soil_mv;
+
+            printk("\n--- Sensor sample ---\n");
+
+            /* RGB sensor (integers only) */
+            if (rgb_sensor_read(&c, &r, &g, &b) == 0) {
+                printk("RGB: C=%u R=%u G=%u B=%u\n", c, r, g, b);
             }
 
-            int rh_int   = (int)(rh_x100 / 100);
-            int rh_frac  = (int)(abs(rh_x100 % 100));
+            /* Humidity + temperature: values are in x100 units */
+            if (humidity_sensor_read(&rh_x100, &temp_x100) == 0) {
 
-            int t_int    = (int)(temp_x100 / 100);
-            int t_frac   = (int)(abs(temp_x100 % 100));
+                /* Clamp RH to 0–100% just in case */
+                if (rh_x100 < 0) {
+                    rh_x100 = 0;
+                } else if (rh_x100 > 10000) {
+                    rh_x100 = 10000;
+                }
 
-            printk("Humidity: %d.%02d %%  Temp: %d.%02d C\n",
-                   rh_int, rh_frac,
-                   t_int,  t_frac);
+                int rh_int   = (int)(rh_x100 / 100);
+                int rh_frac  = (int)(abs(rh_x100 % 100));
+
+                int t_int    = (int)(temp_x100 / 100);
+                int t_frac   = (int)(abs(temp_x100 % 100));
+
+                printk("Humidity: %d.%02d %%  Temp: %d.%02d C\n",
+                       rh_int, rh_frac,
+                       t_int,  t_frac);
+            }
+
+            /* Accelerometer: acceleration in g * 100 */
+            if (accelerometer_sensor_read(&ax_x100, &ay_x100, &az_x100) == 0) {
+
+                int ax_int  = (int)(ax_x100 / 100);
+                int ax_frac = (int)(abs(ax_x100 % 100));
+
+                int ay_int  = (int)(ay_x100 / 100);
+                int ay_frac = (int)(abs(ay_x100 % 100));
+
+                int az_int  = (int)(az_x100 / 100);
+                int az_frac = (int)(abs(az_x100 % 100));
+
+                printk("Accel: X=%d.%02d g  Y=%d.%02d g  Z=%d.%02d g\n",
+                       ax_int, ax_frac,
+                       ay_int, ay_frac,
+                       az_int, az_frac);
+            }
+
+            /* Light sensor on A0 (PB1 / ADC1_IN5) */
+            if (light_sensor_read(&light_raw, &light_mv) == 0) {
+                printk("Light: raw=%d (~%d mV)\n", light_raw, light_mv);
+            }
+
+            /* Soil moisture sensor on A1 (PB2 / ADC1_IN4) */
+            if (soil_sensor_read(&soil_raw, &soil_mv) == 0) {
+                printk("Soil: raw=%d (~%d mV)\n", soil_raw, soil_mv);
+            }
         }
 
-        /* Accelerometer: acceleration in g * 100 */
-        if (accelerometer_sensor_read(&ax_x100, &ay_x100, &az_x100) == 0) {
-
-            int ax_int = (int)(ax_x100 / 100);
-            int ax_frac = (int)(abs(ax_x100 % 100));
-
-            int ay_int = (int)(ay_x100 / 100);
-            int ay_frac = (int)(abs(ay_x100 % 100));
-
-            int az_int = (int)(az_x100 / 100);
-            int az_frac = (int)(abs(az_x100 % 100));
-
-            printk("Accel: X=%d.%02d g  Y=%d.%02d g  Z=%d.%02d g\n",
-                   ax_int, ax_frac,
-                   ay_int, ay_frac,
-                   az_int, az_frac);
-        }
-
-        /* Light sensor on A0 (PB1 / ADC1_IN5) */
-        if (light_sensor_read(&light_raw, &light_mv) == 0) {
-            printk("Light: raw=%d (~%d mV)\n", light_raw, light_mv);
-        }
-
-        /* Soil moisture sensor on A1 (PB2 / ADC1_IN4) */
-        if (soil_sensor_read(&soil_raw, &soil_mv) == 0) {
-            printk("Soil: raw=%d (~%d mV)\n", soil_raw, soil_mv);
-        }
-
-        k_sleep(K_SECONDS(1));
+        /* Small sleep so we don’t busy-loop at 100% CPU */
+        k_sleep(K_MSEC(1));
     }
 }
