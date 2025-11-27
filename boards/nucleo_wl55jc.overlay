@@ -40,14 +40,22 @@
 / {
     leds {
         compatible = "gpio-leds";
-        led_r: led_r { gpios = <&gpiob 8  GPIO_ACTIVE_LOW>; label = "LED_R"; };
-        led_b: led_b { gpios = <&gpioa 9  GPIO_ACTIVE_LOW>; label = "LED_B"; };
-        led_g: led_g { gpios = <&gpiob 10 GPIO_ACTIVE_LOW>; label = "LED_G"; }; 
+        rgb_led_r: rgb_led_r { gpios = <&gpiob 8  GPIO_ACTIVE_LOW>; label = "LED_R"; };
+        rgb_led_b: rgb_led_b { gpios = <&gpioa 9  GPIO_ACTIVE_LOW>; label = "LED_B"; };
+        rgb_led_g: rgb_led_g { gpios = <&gpiob 10 GPIO_ACTIVE_LOW>; label = "LED_G"; }; 
     };
 
     aliases {
-        led0r = &led_r;
-        led0g = &led_g;
-        led0b = &led_b;
+        led0r = &rgb_led_r;
+        led0g = &rgb_led_g;
+        led0b = &rgb_led_b;
     };
+};
+
+/ {
+	aliases {
+		led0 = &blue_led_1; 	// This is LED1 as labeled STM32WL55JC board's 
+		led1 = &green_led_2; 	// This is LED2 as labeled STM32WL55JC board's 
+		led2 = &red_led_3; 	// This is LED3 as labeled STM32WL55JC board's 
+	};
 };

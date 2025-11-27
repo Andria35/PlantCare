@@ -11,6 +11,7 @@
 #include "sensors/soil_sensor.h"
 #include "sensors/gps_sensor.h"
 #include "sensors/leds.h"
+#include "sensors/led1.h"
 
 void main(void)
 {
@@ -26,6 +27,15 @@ void main(void)
     uint32_t last_sample_ms = k_uptime_get_32();
 
     while (1) {
+
+         int ret;
+
+        ret = led1_init();
+        if (ret != 0) {
+           printk("Failed to init LED1, err=%d\n", ret);
+        }
+        led1_set(true);
+
         /* ---- GPS: read characters continuously ---- */
         uint8_t ch;
         if (gps_sensor_read_char(&ch) == 0) {
