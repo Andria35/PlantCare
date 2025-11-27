@@ -26,6 +26,11 @@ int gps_sensor_init(void)
 
 int gps_sensor_read_char(uint8_t *out_char)
 {
+    if (!gps_uart || !device_is_ready(gps_uart)) {
+        /* GPS not initialized or device not ready yet */
+        return -EAGAIN;
+    }
+
     uint8_t c;
     int ret = uart_poll_in(gps_uart, &c);
 
@@ -36,6 +41,6 @@ int gps_sensor_read_char(uint8_t *out_char)
         return 0;               /* got a byte */
     }
 
-    /* uart_poll_in returns -1 when no data; map that to -EAGAIN */
+    /* uart_poll_in returns -1 when no data; we map that to -EAGAIN */
     return -EAGAIN;
 }
