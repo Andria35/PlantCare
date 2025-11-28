@@ -11,6 +11,7 @@
 #include "sensors/rgb_sensor.h"
 #include "sensors/leds.h"
 #include "sensors/gps_sensor.h"
+#include "sensors/button.h"
 #include "helpers/plantcare_config.h"
 
 #include "sensors/led1.h"
@@ -47,9 +48,19 @@ void main(void)
     ret = gps_sensor_init();
     if (ret) printk("gps_sensor_init failed: %d\n", ret);
 
+    ret = button_init();
+    if (ret) printk("buttonr_init failed: %d\n", ret);
+
     g_sensors_ready = true;
     printk("Initialization done. Entering TEST MODE.\n");
 
     /* Run Test Mode on the main thread (never returns) */
-    plantcare_run_test_mode();
+    // plantcare_run_test_mode();
+
+    while (1) {
+    if (button_was_pressed()) {
+    printk("BUTTON: pressed!\n");
+    // e.g. toggle some flag, later maybe switch mode, etc.
+}
+    }
 }
