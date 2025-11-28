@@ -54,13 +54,20 @@ void main(void)
     g_sensors_ready = true;
     printk("Initialization done. Entering TEST MODE.\n");
 
-    /* Run Test Mode on the main thread (never returns) */
-    // plantcare_run_test_mode();
+    /* Start in TEST MODE */
+    g_current_mode = PLANTCARE_MODE_TEST;
 
     while (1) {
-    if (button_was_pressed()) {
-    printk("BUTTON: pressed!\n");
-    // e.g. toggle some flag, later maybe switch mode, etc.
-}
+        switch (g_current_mode) {
+        case PLANTCARE_MODE_TEST:
+            plantcare_run_test_mode();
+            break;
+        case PLANTCARE_MODE_NORMAL:
+            plantcare_run_normal_mode();   // stub for now
+            break;
+        default:
+            g_current_mode = PLANTCARE_MODE_TEST;
+            break;
+        }
     }
 }

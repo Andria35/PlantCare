@@ -5,14 +5,12 @@
 #include <zephyr/sys/printk.h>
 
 #include "button.h"
+#include "plantcare_config.h"
 
 /*
  * We use the board's user button alias "sw0".
- * Most Zephyr board DTS files for Nucleo have:
+ * On most Nucleo boards, devicetree has:
  *   aliases { sw0 = &user_button; };
- *
- * If your board uses a different alias, change "sw0" below
- * (e.g. to DT_ALIAS(user_button)).
  */
 
 #define BUTTON_NODE DT_ALIAS(sw0)
@@ -21,10 +19,20 @@ BUILD_ASSERT(DT_NODE_HAS_STATUS(BUTTON_NODE, okay),
              "sw0 alias (user button) not found in devicetree");
 
 static const struct gpio_dt_spec button = GPIO_DT_SPEC_GET(BUTTON_NODE, gpios);
+static struct gpio_callback button_cb_data;
 
-/* For edge detection */
-static bool last_state = false;
-static bool initialized = false;
+/* ISR: called on button edge */
+static void button_isr(const struct device *dev,
+                       struct gpio_callback *cb,
+                       uint32_t pins)
+{
+    ARG_UNUSED(dev);
+    ARG_UNUSED(cb);
+    ARG_UNUSED(pins);
+
+    /* Just set a global event flag, keep ISR tiny. */
+    g_button_pressed_event = true;
+}
 
 int button_init(void)
 {
@@ -33,51 +41,39 @@ int button_init(void)
         return -ENODEV;
     }
 
-    int ret = gpio_pin_configure_dt(&button, GPIO_INPUT);
+    int ret;
+
+    /* Configure pin as input. ACTIVE_LOW/HIGH is handled by DT. */
+    ret = gpio_pin_configure_dt(&button, GPIO_INPUT);
     if (ret != 0) {
         printk("button: gpio_pin_configure_dt failed, err=%d\n", ret);
         return ret;
     }
 
-    int level = gpio_pin_get_dt(&button);
-    if (level < 0) {
-        level = 0;
+    /* Configure interrupt on edge-to-active.
+     * If the button is ACTIVE_LOW, "active" means low level.
+     */
+    ret = gpio_pin_interrupt_configure_dt(&button,
+                                          GPIO_INT_EDGE_TO_ACTIVE);
+    if (ret != 0) {
+        printk("button: interrupt config failed, err=%d\n", ret);
+        return ret;
     }
-    last_state = (level != 0);
-    initialized = true;
 
-    printk("button: init OK (initial state: %s)\n",
-           last_state ? "pressed" : "released");
+    /* Register callback */
+    gpio_init_callback(&button_cb_data, button_isr, BIT(button.pin));
+    gpio_add_callback(button.port, &button_cb_data);
+
+    printk("button: init OK (interrupt mode)\n");
     return 0;
 }
 
 bool button_is_pressed(void)
 {
-    if (!initialized) {
-        return false;
-    }
-
     int level = gpio_pin_get_dt(&button);
     if (level < 0) {
         return false;
     }
 
     return (level != 0);
-}
-
-bool button_was_pressed(void)
-{
-    if (!initialized) {
-        return false;
-    }
-
-    int level = gpio_pin_get_dt(&button);
-    if (level < 0) {
-        return false;
-    }
-
-    bool curr = (level != 0);
-    bool pressed_event = (!last_state && curr);  // rising edge
-    last_state = curr;
-    return pressed_event;
 }
