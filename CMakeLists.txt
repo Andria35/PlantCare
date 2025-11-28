@@ -15,6 +15,7 @@ target_sources(app PRIVATE
     src/sensors/gps_sensor.c
     src/sensors/leds.c
     src/sensors/led1.c
+    src/sensors/led2.c
     src/helpers/plantcare_state.c
     src/helpers/plantcare_config.c
     src/helpers/sensor_thread.c

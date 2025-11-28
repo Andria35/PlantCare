@@ -13,7 +13,7 @@
 #include "sensors/gps_sensor.h"
 #include "sensors/button.h"
 #include "helpers/plantcare_config.h"
-
+#include "sensors/led2.h"
 #include "sensors/led1.h"
 
 void main(void)
@@ -44,6 +44,9 @@ void main(void)
 
     ret = led1_init();
     if (ret) printk("led1_init failed: %d\n", ret);
+
+    ret = led2_init();
+    if (ret) printk("led2_init failed: %d\n", ret);
 
     ret = gps_sensor_init();
     if (ret) printk("gps_sensor_init failed: %d\n", ret);
