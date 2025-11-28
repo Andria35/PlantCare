@@ -19,6 +19,7 @@ target_sources(app PRIVATE
     src/helpers/plantcare_config.c
     src/helpers/sensor_thread.c
     src/helpers/plantcare_mode_test.c
+    src/helpers/plantcare_units.c
 )
 
 target_include_directories(app PRIVATE)
